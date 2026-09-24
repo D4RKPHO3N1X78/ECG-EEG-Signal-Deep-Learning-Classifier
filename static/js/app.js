@@ -195,7 +195,9 @@ async function runPreprocessing() {
     const fft = computeClientFFT(processed, 250.0);
     initWaveformChart('chart-waveform', rawArr, processed);
     initFFTChart('chart-fft', fft.freqs, fft.vals);
+    renderFeaturesContainer(currentModality === 'ecg' ? extractClientECGFeatures() : extractClientEEGFeatures());
 }
+
 
 async function runModelInference() {
     if (!activeSignal || activeSignal.length === 0) return;
