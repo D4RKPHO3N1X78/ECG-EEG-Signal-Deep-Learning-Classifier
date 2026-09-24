@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECG & EEG Signal Deep Learning Classifier | AI Medical Studio</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h2>NeuroCardia AI</h2>
+                    <span>Signal Deep Learning</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="tab-inspector">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    </svg>
+                    <span>Signal Inspector</span>
+                </button>
+                <button class="nav-item" data-tab="tab-inference">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                    <span>Diagnostic Classifier</span>
+                </button>
+                <button class="nav-item" data-tab="tab-training">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    <span>Model Training Studio</span>
+                </button>
+                <button class="nav-item" data-tab="tab-metrics">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 20V10M12 20V4M6 20v-6"/>
+                    </svg>
+                    <span>Evaluation Metrics</span>
+                </button>
+            </nav>
+
+            <div class="system-status-card">
+                <div class="status-indicator">
+                    <span class="status-dot online"></span>
+                    <span id="device-status">PyTorch Active</span>
+                </div>
+                <div class="status-details">
+                    <span>Engine: <strong>ResNet1D-BiLSTM & EEGNet</strong></span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-title">
+                    <h1 id="page-title">ECG & EEG Bio-Signal Processing Inspector</h1>
+                    <p id="page-subtitle">Interactive signal denoising, spectral analysis, and multi-lead wave inspection</p>
+                </div>
+
+                <div class="header-controls">
+                    <div class="modality-switch">
+                        <button class="btn-toggle active" id="btn-modality-ecg">ECG Cardiac</button>
+                        <button class="btn-toggle" id="btn-modality-eeg">EEG Cognitive</button>
+                    </div>
+                    <button class="btn-primary" id="btn-load-sample">⚡ Load Benchmark Case</button>
+                </div>
+            </header>
+
+            <!-- TAB 1: SIGNAL INSPECTOR & PREPROCESSING PIPELINE -->
+            <section class="tab-page active" id="tab-inspector">
+                <div class="dashboard-grid">
+                    <!-- Control Panel Card -->
+                    <div class="card glass-card span-4">
+                        <div class="card-header">
+                            <h3>Preprocessing Pipeline Pipeline Controls</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Select Condition Benchmark Case</label>
+                                <select id="select-condition" class="form-select">
+                                    <!-- Dynamic options -->
+                                </select>
+                            </div>
+
+                            <div class="filter-toggles-list">
+                                <div class="toggle-row">
+                                    <span>Baseline Wander Removal</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="chk-baseline" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="toggle-row">
+                                    <span>Butterworth Bandpass Filter</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="chk-bandpass" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="toggle-row">
+                                    <span>50Hz Powerline Notch Filter</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="chk-notch" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div class="toggle-row">
+                                    <span>Wavelet / ICA Denoising</span>
+                                    <label class="switch">
+                                        <input type="checkbox" id="chk-denoise" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button class="btn-action w-100" id="btn-run-preprocess">Apply Preprocessing Filter</button>
+                        </div>
+                    </div>
+
+                    <!-- Waveform Viewer Card -->
+                    <div class="card glass-card span-8">
+                        <div class="card-header flex-between">
+                            <h3>Signal Waveform Comparison (Raw vs Filtered)</h3>
+                            <span class="badge badge-accent" id="badge-fs">250 Hz</span>
+                        </div>
+                        <div class="card-body chart-container">
+                            <canvas id="chart-waveform"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- FFT Power Spectrum Card -->
+                    <div class="card glass-card span-6">
+                        <div class="card-header">
+                            <h3>Power Spectral Density (PSD FFT)</h3>
+                        </div>
+                        <div class="card-body chart-container-sm">
+                            <canvas id="chart-fft"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Extracted Features Summary -->
+                    <div class="card glass-card span-6">
+                        <div class="card-header">
+                            <h3>Physiological Feature Extraction</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="features-grid" id="features-container">
+                                <!-- Extracted HRV or EEG Band Power Metrics -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: DIAGNOSTIC CLASSIFIER STUDIO -->
+            <section class="tab-page" id="tab-inference">
+                <div class="dashboard-grid">
+                    <div class="card glass-card span-5">
+                        <div class="card-header">
+                            <h3>Model Inference & Diagnosis</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="patient-meta">
+                                <div class="form-group">
+                                    <label>Patient Record ID</label>
+                                    <input type="text" id="input-patient-id" class="form-control" value="PT-88349-ECG">
+                                </div>
+                            </div>
+
+                            <button class="btn-primary w-100 mt-3" id="btn-run-inference">🧠 Run Deep Learning Classification</button>
+
+                            <div class="diagnosis-card-result mt-4" id="diag-result-card">
+                                <span class="result-label">Predicted Clinical Impression</span>
+                                <h2 class="result-title" id="res-diag-title">Awaiting Inference...</h2>
+                                <div class="confidence-meter">
+                                    <div class="meter-bar">
+                                        <div class="meter-fill" id="res-meter-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <span class="meter-val" id="res-confidence-val">0.0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glass-card span-7">
+                        <div class="card-header">
+                            <h3>Softmax Class Probability Distribution</h3>
+                        </div>
+                        <div class="card-body chart-container">
+                            <canvas id="chart-probabilities"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Diagnostic Clinical Report Card -->
+                    <div class="card glass-card span-12">
+                        <div class="card-header flex-between">
+                            <h3>Generated Clinical Diagnostic Report</h3>
+                            <button class="btn-secondary btn-sm" id="btn-copy-report">📋 Copy Report Markdown</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="report-box" id="report-output">
+                                <p class="placeholder-text">Run classification inference above to generate a complete structured medical diagnostic report.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: MODEL TRAINING STUDIO -->
+            <section class="tab-page" id="tab-training">
+                <div class="dashboard-grid">
+                    <div class="card glass-card span-4">
+                        <div class="card-header">
+                            <h3>PyTorch Model Training Controls</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Target Architecture</label>
+                                <input type="text" class="form-control" id="train-arch-name" value="1D-CNN + BiLSTM + Attention" readonly>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Training Epochs</label>
+                                <input type="number" class="form-control" id="train-epochs" value="10" min="1" max="50">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Optimizer / Scheduler</label>
+                                <input type="text" class="form-control" value="AdamW (lr=1e-3) + CosineAnnealing" readonly>
+                            </div>
+
+                            <button class="btn-primary w-100" id="btn-start-training">🔥 Start Deep Learning Training Job</button>
+                        </div>
+                    </div>
+
+                    <div class="card glass-card span-8">
+                        <div class="card-header">
+                            <h3>Training & Validation Curves</h3>
+                        </div>
+                        <div class="card-body chart-container">
+                            <canvas id="chart-training-curves"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: STRICT EVALUATION METRICS -->
+            <section class="tab-page" id="tab-metrics">
+                <div class="dashboard-grid">
+                    <!-- Metrics Scorecard Grid -->
+                    <div class="card glass-card span-12">
+                        <div class="metrics-score-row" id="metrics-summary-row">
+                            <div class="score-card">
+                                <span>Accuracy</span>
+                                <h3 id="metric-acc">94.2%</h3>
+                            </div>
+                            <div class="score-card">
+                                <span>Balanced Acc</span>
+                                <h3 id="metric-bal-acc">93.8%</h3>
+                            </div>
+                            <div class="score-card">
+                                <span>Macro F1-Score</span>
+                                <h3 id="metric-f1">0.935</h3>
+                            </div>
+                            <div class="score-card">
+                                <span>Macro Sensitivity</span>
+                                <h3 id="metric-sens">0.940</h3>
+                            </div>
+                            <div class="score-card">
+                                <span>Macro Specificity</span>
+                                <h3 id="metric-spec">0.982</h3>
+                            </div>
+                            <div class="score-card">
+                                <span>ROC-AUC</span>
+                                <h3 id="metric-auc">0.978</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confusion Matrix Heatmap Representation -->
+                    <div class="card glass-card span-6">
+                        <div class="card-header">
+                            <h3>Normalized Confusion Matrix</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="matrix-table-wrapper" id="confusion-matrix-container">
+                                <!-- Dynamic confusion matrix table -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Per-Class Metrics Table -->
+                    <div class="card glass-card span-6">
+                        <div class="card-header">
+                            <h3>Per-Class Performance Report</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="custom-table" id="table-per-class">
+                                    <thead>
+                                        <tr>
+                                            <th>Class Name</th>
+                                            <th>Precision</th>
+                                            <th>Recall</th>
+                                            <th>Specificity</th>
+                                            <th>F1</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamic per-class rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Application Script -->
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
